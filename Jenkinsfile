@@ -1,20 +1,23 @@
-node('Built-in'){
+node('built-in') {
     stage('ContinuousDownload') {
-        try {
-            git 'https://github.com/intelliqittrainings/maven.git'
-        }
-        catch(Exception e1){
-            mail bcc: '', body: 'unable to download the code', cc: '', from: '', replyTo: '', subject: 'Download has failed', to: 'git.admin@gmail.com'
-            exit()
-        }
+        git 'https://github.com/intelliqittrainings/maven.git'
     }
+
     stage('ContinuousBuild') {
-        try {
-            sh 'mvn package'
-        }
-        catch(Exception e2){
-            mail bcc: '', body: 'unable to built the code', cc: '', from: '', replyTo: '', subject: 'Build has failed', to: 'Dev.admin@gmail.com'
-            exit()
-        }
+        sh 'mvn package'
     }
+
+    stage('ContinuousDeployment') {
+        sh 'scp /home/ubuntu/.jenkins/workspace/ScriptedPipeline5/webapp/target/webapp.war ubuntu@172.31.39.29:/var/lib/tomcat9/webapps/tester.war'
+    }
+
+    stage('ContinuousTesting') {
+        git 'https://github.com/intelliqittrainings/FunctionalTesting.git'
+        sh 'java -jar /home/ubuntu/.jenkins/workspace/ScriptedPipeline5/testing.jar'
+    }
+    
+    stage('ContinuousDelivery') {
+        sh 'scp /home/ubuntu/.jenkins/workspace/ScriptedPipeline5/webapp/target/webapp.war ubuntu@172.31.39.242:/var/lib/tomcat9/webapps/tester.war'
+    }
+
 }
